@@ -14,10 +14,10 @@ type Event struct {
 	Rack        string
 	Host        string
 	Component   string
-	ServiceId   string
-	ServiceName string
-	TaskId      string
-	TaskName    string
+	Type        string
+	Id          string
+	Name        string
+	Ref         string
 	Msg         interface{}
 	Created     time.Time
 }
@@ -25,25 +25,25 @@ type Event struct {
 
 - ElasticSearch 저장 예시
 ```json
-{
-  "_index": "events",
-  "_type": "text",
-  "_id": "AWEnRASk5z2Ff-6T7Jjq",
-  "_score": 1.0162971,
-  "_source": {
-    "Version": "0.7",
-    "Cluster": "red",
-    "Rack": "r01",
-    "Host": "laptop",
-    "Component": "linux",
-    "ServiceId": "",
-    "ServiceName": "blog",
-    "TaskId": "",
-    "TaskName": "blog.2",
-    "Msg": """{"Nick":"Fat Baby"}""",
-    "Created": "2018-01-24T17:23:44.536458962+09:00"
-  }
-}
+      {
+        "_index": "events",
+        "_type": "text",
+        "_id": "AWFQRmT15z2Ff-6T7J8z",
+        "_score": 1,
+        "_source": {
+          "Version": "0.7",
+          "Cluster": "red",
+          "Rack": "r01",
+          "Host": "laptop",
+          "Component": "windows",
+          "Type": "Task",
+          "Id": "",
+          "Name": "search.1",
+          "Ref": "search",
+          "Msg": """{"Nick":"Little Girl"}""",
+          "Created": "2018-02-01T16:30:46.129702959+09:00"
+        }
+      }
 ```
 
 ### 저장
@@ -55,7 +55,7 @@ type Event struct {
     }
 
     store.UpdateCluster("cluster", "rack", "host", "component")
-    store.InsertWithServiceAndTask(event, "serviceID", "serviecName", "taskID", "taskName")
+    store.InsertWithTask(event, "taskID", "taskName", "refName")
 ```
 
 - 현재 클러스터 매핑

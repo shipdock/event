@@ -62,10 +62,10 @@ type Event struct {
 	Rack        string
 	Host        string
 	Component   string
-	ServiceId   string
-	ServiceName string
-	TaskId      string
-	TaskName    string
+	Type        string
+	Id          string
+	Name        string
+	Ref         string
 	Msg         interface{}
 	Created     time.Time
 }
@@ -76,12 +76,17 @@ const (
 	KeyRack = "Rack"
 	KeyHost = "Host"
 	KeyComponent = "Component"
-	KeyServiceId = "ServiceId"
-	KeyServiceName = "ServiceName"
-	KeyTaskId = "TaskId"
-	KeyTaskName = "TaskName"
+	KeyType = "Type"
+	KeyId = "Id"
+	KeyName = "Name"
 	KeyEvent = "Msg"
 	KeyCreate = "Created"
+
+	TypeService = "Service"
+	TypeTask = "Task"
+	TypeVolume = "Volume"
+	TypeNetwork = "Network"
+	TypeEtc = "Etc"
 )
 
 const mapping = `{
@@ -254,10 +259,9 @@ func (d *DocStore) InsertWithService(doc interface{}, id, name string) error {
 		Rack: d.rack,
 		Host: d.host,
 		Component: d.component,
-		ServiceId: id,
-		ServiceName: name,
-		TaskId: "",
-		TaskName: "",
+		Type: TypeService,
+		Id: id,
+		Name: name,
 		Msg: doc,
 		Created: time.Now(),
 	}
@@ -265,37 +269,19 @@ func (d *DocStore) InsertWithService(doc interface{}, id, name string) error {
 	return d.insert(&ev)
 }
 
-func (d *DocStore) InsertWithTask(doc interface{}, id, name string) error {
+func (d *DocStore) InsertWithTask(doc interface{}, id, name, ref string) error {
 	ev := Event {
 		Version: Version,
 		Cluster: d.cluster,
 		Rack: d.rack,
 		Host: d.host,
 		Component: d.component,
-		ServiceId: "",
-		ServiceName: "",
-		TaskId: id,
-		TaskName: name,
+		Type: TypeTask,
+		Id: id,
+		Name: name,
+		Ref: ref,
 		Msg: doc,
 		Created: time.Now(),
-	}
-
-	return d.insert(&ev)
-}
-
-func (d *DocStore) InsertWithServiceAndTask(doc interface{}, serviceID, serviceName, taskID, taskName string) error {
-	ev := Event {
-		Version:     Version,
-		Cluster:     d.cluster,
-		Rack:        d.rack,
-		Host:        d.host,
-		Component:   d.component,
-		ServiceId:   serviceID,
-		ServiceName: serviceName,
-		TaskId:      taskID,
-		TaskName:    taskName,
-		Msg:         doc,
-		Created:     time.Now(),
 	}
 
 	return d.insert(&ev)
@@ -308,10 +294,9 @@ func (d *DocStore) Insert(doc interface{}) error {
 		Rack: d.rack,
 		Host: d.host,
 		Component: d.component,
-		ServiceId: "",
-		ServiceName: "",
-		TaskId: "",
-		TaskName: "",
+		Type: TypeEtc,
+		Id: "",
+		Name: "",
 		Msg: doc,
 		Created: time.Now(),
 	}
@@ -424,11 +409,12 @@ func (d *DocStore) SearchService(serviceId, serviceName, cluster string) ([]*Eve
 		terms = append(terms, elastic.NewTermQuery(KeyCluster, cluster))
 	}
 	if serviceId != "" {
-		terms = append(terms, elastic.NewTermQuery(KeyServiceId, serviceId))
+		terms = append(terms, elastic.NewTermQuery(KeyId, serviceId))
 	}
 	if serviceName != "" {
-		terms = append(terms, elastic.NewTermQuery(KeyServiceName, serviceName))
+		terms = append(terms, elastic.NewTermQuery(KeyName, serviceName))
 	}
+	terms = append(terms, elastic.NewTermQuery(KeyType, TypeService))
 
 	return d.SearchByQuery(elastic.NewBoolQuery().Must(terms...), 0, 100)
 }
@@ -439,11 +425,12 @@ func (d *DocStore) SearchTask(taskId, taskName, cluster string) ([]*Event, error
 		terms = append(terms, elastic.NewTermQuery(KeyCluster, cluster))
 	}
 	if taskId != "" {
-		terms = append(terms, elastic.NewTermQuery(KeyTaskId, taskId))
+		terms = append(terms, elastic.NewTermQuery(KeyId, taskId))
 	}
 	if taskName != "" {
-		terms = append(terms, elastic.NewTermQuery(KeyTaskName, taskName))
+		terms = append(terms, elastic.NewTermQuery(KeyName, taskName))
 	}
+	terms = append(terms, elastic.NewTermQuery(KeyType, TypeTask))
 
 	return d.SearchByQuery(elastic.NewBoolQuery().Must(terms...), 0, 100)
 }

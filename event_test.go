@@ -25,7 +25,17 @@ func load(ds *DocStore, cluster, rack, host, component string) {
 	ds.UpdateCluster(cluster, rack, host, component)
 
 	for _, sr := range services {
-		for _, ta := range tasks {
+		for _, co := range contents {
+			tx, err := json.Marshal(&co)
+			if err != nil {
+				panic(err)
+			}
+			ds.InsertWithService(string(tx), "", sr)
+		}
+	}
+
+	for _, ta := range tasks {
+		for _, sr := range services {
 			if ! strings.HasPrefix(ta, sr) {
 				continue
 			}
@@ -35,7 +45,7 @@ func load(ds *DocStore, cluster, rack, host, component string) {
 				if err != nil {
 					panic(err)
 				}
-				ds.InsertWithServiceAndTask(string(tx), "", sr, "", ta)
+				ds.InsertWithTask(string(tx),"", ta, sr)
 			}
 		}
 	}
@@ -104,7 +114,8 @@ func TestDocStore_SearchByMap(t *testing.T) {
 	var term = map[string]string {
 		KeyCluster: "red",
 		KeyComponent: "linux",
-		KeyServiceName: "blog",
+		KeyType: TypeService,
+		KeyName: "blog",
 	}
 	var match = map[string]string {
 		KeyEvent: "Baby",
