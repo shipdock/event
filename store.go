@@ -42,9 +42,9 @@ var PreDefineClusterEnvMap = map[string]string {
 }
 
 var MapEnvAddress = map[string]string {
-	EnvTest: "http://elastic:rAJLjmKcEOjUDAHm@shev-test.ppr2.io.navercorp.com:9200",
-	EnvDev:  "http://elastic:changeme@shev-dev.ppr2.io.navercorp.com:9200",
-	EnvReal: "http://elastic:changeme@shev-real.ppr2.io.navercorp.com:9200",
+	EnvTest: "http://elastic:rAJLjmKcEOjUDAHm@shev-test.ppr2.io.navercorp.com:10200",
+	EnvDev:  "http://elastic:changeme@shev-dev.ppr2.io.navercorp.com:10200",
+	EnvReal: "http://elastic:changeme@shev-real.ppr2.io.navercorp.com:10200",
 }
 
 type DocStore struct {
