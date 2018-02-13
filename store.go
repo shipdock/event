@@ -13,7 +13,7 @@ import (
 
 const (
 	Index = "events"
-	DocumentType = "text"
+	DocumentType = "json"
 	Version = "0.7"
 )
 
