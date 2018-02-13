@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"reflect"
-	"regexp"
 	"time"
 
 	"github.com/pkg/errors"
@@ -13,39 +12,10 @@ import (
 )
 
 const (
-	EnvDefault = EnvTest
-	EnvTest = "test"
-	EnvDev = "dev"
-	EnvReal = "real"
-	EnvExternal = EnvReal
 	Index = "events"
 	DocumentType = "text"
 	Version = "0.7"
 )
-
-var PreDefineClusterEnvMap = map[string]string {
-	"build": EnvDev,
-	"dpd1":  EnvTest,
-	"dpd2":  EnvTest,
-	"edu":   EnvTest,
-	"exp":   EnvTest,
-	"ksd1":  EnvTest,
-	"pcd1":  EnvDev,
-	"pcr1":  EnvReal,
-	"play":  EnvTest,
-	"ppr1":  EnvReal,
-	"ppr2":  EnvReal,
-	"ppr3":  EnvReal,
-	"test":  EnvDev,
-	"pxr1":  EnvExternal,
-	"pxr2":  EnvExternal,
-}
-
-var MapEnvAddress = map[string]string {
-	EnvTest: "http://elastic:rAJLjmKcEOjUDAHm@shev-test.ppr2.io.navercorp.com:10200",
-	EnvDev:  "http://elastic:changeme@shev-dev.ppr2.io.navercorp.com:10200",
-	EnvReal: "http://elastic:changeme@shev-real.ppr2.io.navercorp.com:10200",
-}
 
 type DocStore struct {
 	cluster     string
@@ -116,24 +86,14 @@ const mapping = `{
 	}
 }`
 
-func NewEventStoreByEnv(env string) (*DocStore, error) {
-	address := ""
-	if env == "" {
-		err := errors.Errorf("new: env should not be nil")
+func NewEventStoreByEnv(url string) (*DocStore, error) {
+	if url == "" {
+		err := errors.Errorf("new: URL should not be nil")
 		logrus.Error(err)
 		return nil, err
 	}
 
-	if env != "" {
-		address = MapEnvAddress[env]
-		if address == "" {
-			err := errors.Errorf("new: could not recognize env - '%v'", env)
-			logrus.Error(err)
-			return nil, err
-		}
-	}
-
-	client, err := elastic.NewClient(elastic.SetURL(address))
+	client, err := elastic.NewClient(elastic.SetURL(url))
 	if err != nil {
 		logrus.Error("new|client: ", err)
 		return nil, err
@@ -164,11 +124,11 @@ func NewEventStoreByEnv(env string) (*DocStore, error) {
 	return ds, err
 }
 
-func NewEventStore(cluster, rack, host, component, env string) (*DocStore, error) {
+func NewEventStore(cluster, rack, host, component, url string) (*DocStore, error) {
 	if host == "" {
 		name, err := os.Hostname()
 		if err != nil {
-			err := errors.Errorf("new: could not get hostname - '%v'", env)
+			err := errors.Errorf("new: could not get hostname")
 			logrus.Error(err)
 			return nil, err
 		}
@@ -184,20 +144,7 @@ func NewEventStore(cluster, rack, host, component, env string) (*DocStore, error
 		}
 	}
 
-	address := ""
-	if env == "" {
-		env = getEnvByCluster(cluster)
-	}
-	if env != "" {
-		address = MapEnvAddress[env]
-		if address == "" {
-			err := errors.Errorf("new: could not recognize env - '%v'", env)
-			logrus.Error(err)
-			return nil, err
-		}
-	}
-
-	client, err := elastic.NewClient(elastic.SetURL(address))
+	client, err := elastic.NewClient(elastic.SetURL(url))
 	if err != nil {
 		logrus.Error("new|client: ", err)
 		return nil, err
@@ -485,24 +432,4 @@ func (d *DocStore) exists() (bool, error) {
 
 func (d *DocStore) setInfoByHost() error {
 	return nil
-}
-
-func getEnvByCluster(cluster string) string {
-	env := PreDefineClusterEnvMap[cluster]
-	if env != "" {
-		return env
-	}
-
-	if !regexp.MustCompile(`^[a-z][a-z][a-z][0-9]$`).MatchString(cluster) {
-		return EnvDefault
-	}
-
-	if cluster[2] == 'r' {
-		return EnvReal
-	}
-	if cluster[2] == 'd' {
-		return EnvDev
-	}
-
-	return EnvTest
 }

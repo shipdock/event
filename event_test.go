@@ -13,6 +13,8 @@ type Sample struct {
 	Nick        string
 }
 
+const ElasticSearch = ""
+
 var clusters = []string { "red", "blue", "green" }
 var racks = []string { "r01", "r02" }
 var hosts = []string { "laptop", "desktop", "tablet", "cellphone" }
@@ -53,7 +55,7 @@ func load(ds *DocStore, cluster, rack, host, component string) {
 
 func TestInit(t *testing.T) {
 	b := time.Now()
-	ds, e := NewEventStoreByEnv(EnvTest)
+	ds, e := NewEventStoreByEnv(ElasticSearch)
 	if e != nil {
 		panic(e)
 	}
@@ -73,7 +75,7 @@ func TestInit(t *testing.T) {
 }
 
 func TestReset(t *testing.T) {
-	ds, e := NewEventStoreByEnv(EnvTest)
+	ds, e := NewEventStoreByEnv(ElasticSearch)
 	if e != nil {
 		panic(e)
 	}
@@ -94,7 +96,7 @@ func printEvents(es []*Event, e error) {
 func TestDocStore_Search(t *testing.T) {
 	logrus.SetLevel(logrus.DebugLevel)
 
-	ds, e := NewEventStoreByEnv(EnvTest)
+	ds, e := NewEventStoreByEnv(ElasticSearch)
 	if e != nil {
 		panic(e)
 	}
@@ -106,7 +108,7 @@ func TestDocStore_Search(t *testing.T) {
 }
 
 func TestDocStore_SearchByMap(t *testing.T) {
-	ds, e := NewEventStoreByEnv(EnvTest)
+	ds, e := NewEventStoreByEnv(ElasticSearch)
 	if e != nil {
 		panic(e)
 	}
@@ -124,7 +126,7 @@ func TestDocStore_SearchByMap(t *testing.T) {
 }
 
 func TestDocStore_SearchByRawString(t *testing.T) {
-	ds, e := NewEventStoreByEnv(EnvTest)
+	ds, e := NewEventStoreByEnv(ElasticSearch)
 	if e != nil {
 		panic(e)
 	}
